@@ -1,0 +1,20 @@
+{% extends 'layout.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<section class="hero">
+    <div>
+        <span class="eyebrow">SMART CITY • CITIZEN REPORTING</span>
+        <h1>Make Your City Cleaner</h1>
+        <p>Report garbage, poor hygiene, drainage problems, road damage and other urban issues to the concerned authorities.</p>
+        <div class="hero-actions">
+            <a href="{% if user.is_authenticated %}{% url 'report_issue' %}{% else %}{% url 'login' %}?next={% url 'report_issue' %}{% endif %}" class="btn">Report an Issue</a>
+            {% if not user.is_authenticated %}<a href="{% url 'register' %}" class="btn secondary">Create Account</a>{% endif %}
+        </div>
+    </div>
+</section>
+<section class="features">
+    <div class="feature"><h3>📷 Upload Evidence</h3><p>Attach an image so authorities can understand the problem.</p></div>
+    <div class="feature"><h3>📍 Add Location</h3><p>Tell the authorities exactly where the issue exists.</p></div>
+    <div class="feature"><h3>📊 Track Status</h3><p>Follow your complaint from pending to resolution.</p></div>
+</section>
+{% endblock %}

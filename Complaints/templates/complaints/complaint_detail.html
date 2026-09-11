@@ -1,0 +1,16 @@
+{% extends 'layout.html' %}
+{% block title %}Complaint Details{% endblock %}
+{% block content %}
+<div class="detail-container">
+    <a href="{% url 'my_complaints' %}" class="back-link">← Back to My Complaints</a>
+    <div class="detail-card">
+        <div class="detail-header"><h1>{{ complaint.issue_type }}</h1><span class="status status-{{ complaint.status|slugify }}">{{ complaint.status }}</span></div>
+        {% if complaint.image %}<img class="detail-image" src="{{ complaint.image.url }}" alt="Complaint image">{% endif %}
+        <p><strong>Description</strong><br>{{ complaint.description }}</p>
+        <p><strong>Location</strong><br>{{ complaint.location }}</p>
+        <p><strong>Reported</strong><br>{{ complaint.created_at|date:'d M Y, h:i A' }}</p>
+        {% if complaint.admin_update %}<div class="update-box"><strong>Authority Update</strong><p>{{ complaint.admin_update }}</p></div>{% endif %}
+        {% if complaint.resolved_image %}<h3>Resolution Image</h3><img class="detail-image" src="{{ complaint.resolved_image.url }}" alt="Resolution image">{% endif %}
+    </div>
+</div>
+{% endblock %}

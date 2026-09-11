@@ -1,0 +1,20 @@
+{% extends 'layout.html' %}
+{% block title %}Review Complaint{% endblock %}
+{% block content %}
+<div class="detail-container">
+    <a href="{% url 'admin_dashboard' %}" class="back-link">← Back to Admin Dashboard</a>
+    <div class="detail-card">
+        <div class="detail-header"><h1>#{{ complaint.id }} — {{ complaint.issue_type }}</h1><span class="status status-{{ complaint.status|slugify }}">{{ complaint.status }}</span></div>
+        {% if complaint.image %}<img class="detail-image" src="{{ complaint.image.url }}" alt="Complaint image">{% endif %}
+        <p><strong>Citizen:</strong> {{ complaint.user.username }}</p>
+        <p><strong>Location:</strong> {{ complaint.location }}</p>
+        <p><strong>Description:</strong><br>{{ complaint.description }}</p>
+        <form method="POST" enctype="multipart/form-data" class="admin-form">{% csrf_token %}
+            <div class="form-group"><label>Status</label><select name="status"><option {% if complaint.status == 'Pending' %}selected{% endif %}>Pending</option><option {% if complaint.status == 'In Progress' %}selected{% endif %}>In Progress</option><option {% if complaint.status == 'Resolved' %}selected{% endif %}>Resolved</option><option {% if complaint.status == 'Rejected' %}selected{% endif %}>Rejected</option></select></div>
+            <div class="form-group"><label>Admin Update</label><textarea name="admin_update" placeholder="Describe what was done...">{{ complaint.admin_update }}</textarea></div>
+            <div class="form-group"><label>Resolution Image (optional)</label><input type="file" name="resolved_image" accept="image/*"></div>
+            <button class="btn" type="submit">Save Update</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

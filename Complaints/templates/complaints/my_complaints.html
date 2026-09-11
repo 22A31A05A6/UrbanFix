@@ -1,0 +1,21 @@
+{% extends 'layout.html' %}
+{% block title %}My Complaints{% endblock %}
+{% block content %}
+<div class="complaints-container">
+    <div class="page-heading"><h1>My Complaints</h1><a href="{% url 'report_issue' %}" class="btn">+ Report Issue</a></div>
+    {% if complaints %}
+        {% for complaint in complaints %}
+        <div class="complaint-card">
+            <div class="complaint-image">{% if complaint.image %}<img src="{{ complaint.image.url }}" alt="Complaint image">{% else %}<div class="no-image">No Image</div>{% endif %}</div>
+            <div class="complaint-info">
+                <div class="card-top"><h2>{{ complaint.issue_type }}</h2><span class="status status-{{ complaint.status|slugify }}">{{ complaint.status }}</span></div>
+                <p>{{ complaint.description }}</p>
+                <p><strong>Location:</strong> {{ complaint.location }}</p>
+                <p class="muted">Reported {{ complaint.created_at|date:'d M Y, h:i A' }}</p>
+                <a href="{% url 'complaint_detail' complaint.id %}" class="text-link">View Details →</a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}<div class="empty"><h2>No complaints yet</h2><p>Submit your first urban issue report.</p><a href="{% url 'report_issue' %}" class="btn">Report an Issue</a></div>{% endif %}
+</div>
+{% endblock %}
