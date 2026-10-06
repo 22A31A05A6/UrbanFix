@@ -7,6 +7,87 @@ from django.shortcuts import get_object_or_404, redirect, render
 from .forms import ComplaintForm
 from .models import Complaint
 
+# from django.http import JsonResponse, request
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+
+from .serializers import ComplaintSerializer
+
+
+def staff_only():
+    return Response({'error': 'Officers only'}, status=status.HTTP_403_FORBIDDEN)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getfunction(request, format=None):
+    # officers see everything, citizens see only their own
+    if request.user.is_staff:
+        complaints = Complaint.objects.all()
+    else:
+        complaints = Complaint.objects.filter(user=request.user)
+    serializer = ComplaintSerializer(complaints.order_by('-created_at'), many=True,
+                                     context={'request': request})
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def postfunction(request, format=None):
+    serializer = ComplaintSerializer(data=request.data, context={'request': request})
+    if serializer.is_valid():
+
+        serializer.save(user=request.user)   # owner comes from the login, not the client
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getdetails(request, user, format=None):
+    # citizens can only fetch their own complaints, officers can fetch anyone's
+    if not request.user.is_staff and request.user.id != user:
+        return Response({'error': 'Not allowed'}, status=status.HTTP_403_FORBIDDEN)
+
+    complaint = Complaint.objects.filter(user=user)
+    if not complaint:
+        return Response({'error': 'Complaint not found'}, status=status.HTTP_404_NOT_FOUND)
+    serializer = ComplaintSerializer(complaint, many=True, context={'request': request})
+    return Response(serializer.data)
+
+@api_view(['PUT', 'PATCH','GET'])
+@permission_classes([IsAuthenticated])
+def update_complaint(request, complaint_id, format=None):
+    if not request.user.is_staff:
+        return staff_only()
+
+    complaint = get_object_or_404(Complaint, id=complaint_id)
+    serializer = ComplaintSerializer(
+        complaint, data=request.data,
+        partial=(request.method == 'PATCH'),
+        context={'request': request},
+    )
+    if serializer.is_valid():
+        print("ACCEPTED:", serializer.validated_data)
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_complaint(request, complaint_id, format=None):
+    if not request.user.is_staff:
+        return staff_only()
+    complaint = get_object_or_404(Complaint, id=complaint_id)
+    complaint.delete()
+    return Response({'message': 'Complaint deleted successfully'}, status=status.HTTP_200_OK)
 
 def register(request):
     if request.method == 'POST':
